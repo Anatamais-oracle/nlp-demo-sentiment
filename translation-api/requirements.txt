@@ -1,0 +1,7 @@
+transformers==4.9.2
+torch==1.6.0
+fastapi==0.68.1
+Werkzeug==2.0.1
+uvicorn==0.15.0
+sentencepiece==0.1.96
+python-dotenv

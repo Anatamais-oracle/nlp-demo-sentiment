@@ -1,0 +1,4 @@
+oci==2.44.1
+pandas
+requests
+python-dotenv

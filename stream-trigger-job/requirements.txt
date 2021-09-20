@@ -1,0 +1,3 @@
+oci==2.44.1
+requests
+python-dotenv

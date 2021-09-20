@@ -1,0 +1,43 @@
+#apiVersion: apps/v1
+#kind: Deployment
+
+#metadata:
+#  name: facebook-job-minikube
+#  labels:
+#    app: facebook-job
+#spec:
+#  selector:
+#    matchLabels:
+#      app: facebook-job
+#  template:
+#    metadata:
+#      labels:
+#        app: facebook-job
+#    spec:
+#      containers:
+#      - name: facebook-job
+#        image: <region>.ocir.io/<Object Storage Namespace>/facebook-job:test
+#        imagePullPolicy: Always
+#        resources:
+#          requests:
+#            memory: "4Gi"
+#        ports:
+#        - containerPort: 8081
+#     
+#---
+
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: cron-facebook-job
+spec:
+  schedule: "*/1 * * * *"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: facebook-job
+            image: <region>.ocir.io/<Object Storage Namespace>/facebook-job:test
+            imagePullPolicy: Always
+          restartPolicy: OnFailure

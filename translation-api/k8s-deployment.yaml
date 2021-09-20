@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: translation-api-minikube
+  labels:
+    app: translation-api
+spec:
+  selector:
+    matchLabels:
+      app: translation-api
+  template:
+    metadata:
+      labels:
+        app: translation-api
+    spec:
+      containers:
+      - name: translation-api
+        image: <region>.ocir.io/<Object Storage Namespace>/nlp-translation:latest
+        imagePullPolicy: Always
+        resources:
+          requests:
+            memory: "4Gi"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: translation-api-minikube-service
+  annotations:
+    service.beta.kubernetes.io/oci-load-balancer-internal: "true"
+    service.beta.kubernetes.io/oci-load-balancer-subnet1: "<SUBNET_LB_OCID>"
+
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: translation-api

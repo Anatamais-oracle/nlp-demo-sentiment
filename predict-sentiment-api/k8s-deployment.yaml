@@ -1,0 +1,44 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: predict-sentiment-api-minikube
+  labels:
+    app: predict-sentiment-api
+spec:
+  selector:
+    matchLabels:
+      app: predict-sentiment-api
+  template:
+    metadata:
+      labels:
+        app: predict-sentiment-api
+    spec:
+      containers:
+      - name: predict-sentiment-api
+        image: <region>.ocir.io/<Object Storage Namespace>/predict-sentiment:latest
+        env:
+          - name: TRANSLATIONAPI_LB_IP
+            value: $TRANSLATIONAPI_LB_IP
+        resources:
+          requests:
+            memory: "4Gi"
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: predict-sentiment-api-minikube-service
+  annotations:
+    service.beta.kubernetes.io/oci-load-balancer-internal: "true"
+    service.beta.kubernetes.io/oci-load-balancer-subnet1: "<SUBNET_LB_OCID>"
+    service.beta.kubernetes.io/oci-load-balancer-shape: "400Mbps"
+
+spec:
+  type: LoadBalancer
+  ports:
+  - port: 8082
+    targetPort: 8082
+  selector:
+    app: predict-sentiment-api

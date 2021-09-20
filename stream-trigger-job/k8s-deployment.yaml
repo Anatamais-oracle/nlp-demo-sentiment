@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: stream-trigger-job-minikube
+  labels:
+    app: stream-trigger-job
+spec:
+  selector:
+    matchLabels:
+      app: stream-trigger-job
+  template:
+    metadata:
+      labels:
+        app: stream-trigger-job
+    spec:
+      containers:
+      - name: translation-job
+        image: <region>.ocir.io/<Object Storage Namespace>/stream-trigger-job:latest
+        env:
+          - name: PREDICTSENTIMENT_LB_IP
+            value: $PREDICTSENTIMENT_LB_IP
+        resources:
+          requests:
+            memory: "4Gi"
+        ports:
+        - containerPort: 8081

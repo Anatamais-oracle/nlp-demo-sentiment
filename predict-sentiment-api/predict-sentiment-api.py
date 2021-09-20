@@ -93,7 +93,6 @@ async def predict(token: dict = Depends(authenticate), data: dict = Depends(vali
     sentiment_analysis = output.data
     
     df = pd.DataFrame([{key: i.__dict__[key] for key in i.__dict__.keys() if key in ['_text', '_sentiment']} for i in sentiment_analysis.aspects])
-    df['_text'] = df['_text'].apply(lambda x: [lemmatizer.lemmatize(i) for i in x.split()])
     
     updated_time = str(datetime.now())
 
@@ -101,7 +100,7 @@ async def predict(token: dict = Depends(authenticate), data: dict = Depends(vali
         url = f"http://{os.environ['TRANSLATIONAPI_LB_IP']}:8080/predict"
     
         payload = {
-        "text": ">>por<< " + row['_text'],
+        "text": ">>por<< " + " ".join([lemmatizer.lemmatize(word) for word in row['_text'].split()]),
         "transformation": "en2pt"
         }
         headers = {

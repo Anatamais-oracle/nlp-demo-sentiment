@@ -1,0 +1,6 @@
+predict-sentiment-api/k8s-deployment-deploy.yaml
+stream-trigger-job/k8s-deployment-deploy.yaml
+__pycache__/
+ppt-demo-nlp.pptx
+solution-architecture
+solution-architecture.drawio.png

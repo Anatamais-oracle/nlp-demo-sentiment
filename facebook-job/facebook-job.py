@@ -45,7 +45,10 @@ def get_fb_comments(df_posts, minutes, utc, page_id, access_token):
         url = f'https://graph.facebook.com/{post_id}/comments?access_token={access_token}&order=reverse_chronological'
         response = requests.get(url)
         data = response.json()
-        df_comments = pd.DataFrame([{**post, **{'post_id':post_id}} for post in data['data']])
+        try:
+            df_comments = pd.concat([df_comments, pd.DataFrame([{**post, **{'post_id':post_id}} for post in data['data']])])
+        except:
+            df_comments = pd.DataFrame([{**post, **{'post_id':post_id}} for post in data['data']])
         
         while len(data['data']) != 0 and datetime.datetime.strptime(data['data'][-1]['created_time'], "%Y-%m-%dT%H:%M:%S%z") >= datetime.datetime.now(tz=utc) - minutes:
             url = f"https://graph.facebook.com/{post_id}/comments?access_token={access_token}&order=reverse_chronological&after={data['paging']['cursors']['after']}"
@@ -67,7 +70,10 @@ def get_fb_threads(df_comments, minutes, utc, page_id, access_token):
         url = f'https://graph.facebook.com/{comment_id}/comments?access_token={access_token}&order=reverse_chronological'
         response = requests.get(url)
         data = response.json()
-        df_threads = pd.DataFrame([{**comment, **{'comment_id':comment_id}} for comment in data['data']])
+        try:
+            df_threads = pd.concat([df_threads, pd.DataFrame([{**comment, **{'comment_id':comment_id}} for comment in data['data']])])
+        except:
+            df_threads = pd.DataFrame([{**comment, **{'comment_id':comment_id}} for comment in data['data']])
         
         while len(data['data']) != 0 and datetime.datetime.strptime(data['data'][-1]['created_time'], "%Y-%m-%dT%H:%M:%S%z") >= datetime.datetime.now(tz=utc) - minutes:
             url = f"https://graph.facebook.com/{comment_id}/comments?access_token={access_token}&order=reverse_chronological&after={data['paging']['cursors']['after']}"

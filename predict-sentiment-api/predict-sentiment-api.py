@@ -93,8 +93,23 @@ async def predict(token: dict = Depends(authenticate), data: dict = Depends(vali
     sentiment_analysis = output.data
     
     df = pd.DataFrame([{key: i.__dict__[key] for key in i.__dict__.keys() if key in ['_text', '_sentiment']} for i in sentiment_analysis.aspects])
-    
+
     updated_time = str(datetime.now())
+    
+    if len(df) == 0:
+        url = os.environ['ADB_URL_INSERTCOMMENTS']
+        payload = {"ID_": data['id'],
+                          "POST_ID": data['post_id'],
+                          "MESSAGE": data['message'][:32767],
+                          "CREATED_TIME": data['created_time'],
+                          "UPDATED_TIME": updated_time,
+                          "TEXT_ELEMENT_EN":  'None',
+                          "TEXT_ELEMENT_PT": 'None',
+                          "SENTIMENT": 'None'}
+        
+        headers = {"Content-Type": "application/json"}
+
+        response = requests.request("POST", url, json=payload, headers=headers)
 
     for i, row in df.iterrows():
         url = f"http://{os.environ['TRANSLATIONAPI_LB_IP']}:8080/predict"
@@ -119,16 +134,13 @@ async def predict(token: dict = Depends(authenticate), data: dict = Depends(vali
                           "MESSAGE": data['message'][:32767],
                           "CREATED_TIME": data['created_time'],
                           "UPDATED_TIME": updated_time,
-                          "TEXT_ELEMENT_EN": row['_text'],
+                          "TEXT_ELEMENT_EN":  " ".join([lemmatizer.lemmatize(word) for word in row['_text'].split()]),
                           "TEXT_ELEMENT_PT": translated_back_message,
                           "SENTIMENT": row['_sentiment']}
         
         headers = {"Content-Type": "application/json"}
 
         response = requests.request("POST", url, json=payload, headers=headers)
-
-        print(response)
-        print(response.text)
     
     return JSONResponse(
         status_code=200,

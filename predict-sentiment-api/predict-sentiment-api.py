@@ -12,6 +12,9 @@ import jsonpickle
 import pandas as pd
 from datetime import datetime
 
+import nltk
+from nltk.stem import WordNetLemmatizer 
+
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -31,8 +34,11 @@ async def authenticate(request: Request):
 
 @app.on_event("startup")
 async def load_model():
-    global ai_client
-
+    global ai_client, lemmatizer
+    
+    nltk.download('wordnet')
+    lemmatizer = WordNetLemmatizer()
+    
     ai_client = oci.ai_language.AIServiceLanguageClient(oci.config.from_file(os.environ['OCI_CONFIG_URI']))
 
 async def validate_json(request: Request):
@@ -52,7 +58,7 @@ async def validate_json(request: Request):
 
 @app.post("/predict")
 async def predict(token: dict = Depends(authenticate), data: dict = Depends(validate_json)):
-    global ai_client
+    global ai_client, lemmatizer
     
     data = json.loads(data)
     url = os.environ['ADB_URL_CHECKIFEXIST']
@@ -87,6 +93,7 @@ async def predict(token: dict = Depends(authenticate), data: dict = Depends(vali
     sentiment_analysis = output.data
     
     df = pd.DataFrame([{key: i.__dict__[key] for key in i.__dict__.keys() if key in ['_text', '_sentiment']} for i in sentiment_analysis.aspects])
+    df['_text'] = df['_text'].apply(lambda x: [lemmatizer.lemmatize(i) for i in x.split()])
     
     updated_time = str(datetime.now())
 
